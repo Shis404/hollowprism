@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Physics Lab: Refractive Index of a Hollow Prism</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glow-yellow {
+      box-shadow: 0 0 25px rgba(234, 179, 8, 0.4);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-black">
+
+  <!-- Header & Navigation -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-slate-950 font-bold shadow-lg shadow-amber-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polygon points="12 3 2 21 22 21" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="rgba(251, 191, 36, 0.2)"/>
+            <line x1="2" y1="14" x2="22" y2="14" stroke-width="1.5" stroke-dasharray="2 2" stroke="currentColor"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-lg text-white tracking-tight">Refractive Index of a Hollow Prism</h1>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-medium">Class XII / B.Sc Practical</span>
+          </div>
+          <p class="text-xs text-slate-400">Virtual Spectrometer & Ray Optics Simulation Lab</p>
+        </div>
+      </div>
+
+      <!-- Tab Buttons -->
+      <nav class="flex items-center space-x-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs sm:text-sm">
+        <button id="nav-sim" onclick="switchMainTab('sim')" class="px-3.5 py-1.5 rounded-lg font-medium transition bg-amber-500 text-slate-950 shadow">
+          Interactive Lab
+        </button>
+        <button id="nav-table" onclick="switchMainTab('table')" class="px-3.5 py-1.5 rounded-lg font-medium transition text-slate-300 hover:text-white">
+          Observation Table
+        </button>
+        <button id="nav-graph" onclick="switchMainTab('graph')" class="px-3.5 py-1.5 rounded-lg font-medium transition text-slate-300 hover:text-white">
+          i - &delta; Graph
+        </button>
+        <button id="nav-theory" onclick="switchMainTab('theory')" class="px-3.5 py-1.5 rounded-lg font-medium transition text-slate-300 hover:text-white">
+          Theory & Viva
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Notification Banner / Toast Message -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-sm">
+    <div id="toast-icon" class="text-amber-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    </div>
+    <span id="toast-msg">Reading logged successfully!</span>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- ==================== SECTION 1: INTERACTIVE LAB ==================== -->
+    <div id="tab-sim-content" class="space-y-6">
+      
+      <!-- Top Status & Quick Bar -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Liquid Picker Card -->
+        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between">
+          <div>
+            <label class="text-xs uppercase tracking-wider font-semibold text-slate-400 block mb-1">Liquid in Prism</label>
+            <select id="liquid-select" onchange="onLiquidChange()" class="bg-slate-800 border border-slate-700 text-white text-sm rounded-lg px-2.5 py-1.5 font-medium focus:outline-none focus:border-amber-400 cursor-pointer">
+              <option value="water" selected>Water (H₂O) - standard</option>
+              <option value="glycerine">Glycerine (Pure)</option>
+              <option value="ethanol">Ethyl Alcohol (Ethanol)</option>
+              <option value="benzene">Benzene</option>
+              <option value="kerosene">Kerosene Oil</option>
+              <option value="turpentine">Turpentine Oil</option>
+              <option value="unknown">Unknown Liquid 'X'</option>
+            </select>
+          </div>
+          <div id="liquid-preview-dot" class="w-10 h-10 rounded-full border-2 border-slate-700 flex items-center justify-center text-xs font-mono font-bold bg-cyan-900/40 text-cyan-300">
+            H₂O
+          </div>
+        </div>
+
+        <!-- Practical Mode Selector -->
+        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl md:col-span-2 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Spectrometer Practical Stage</span>
+            <span id="stage-badge" class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Step 2: Minimum Deviation</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-xs">
+            <button onclick="setExperimentStage('direct')" id="stage-btn-direct" class="py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition">
+              1. Direct Ray (R₀)
+            </button>
+            <button onclick="setExperimentStage('dev')" id="stage-btn-dev" class="py-1.5 px-2 rounded-lg border border-amber-500 bg-amber-500/20 text-amber-300 font-semibold transition">
+              2. Min Deviation (Dₘ)
+            </button>
+            <button onclick="setExperimentStage('prism_angle')" id="stage-btn-prism" class="py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition">
+              3. Prism Angle (A)
+            </button>
+          </div>
+        </div>
+
+        <!-- Formula Display -->
+        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex flex-col justify-center">
+          <span class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-1">Prism Formula</span>
+          <div class="font-mono text-xs sm:text-sm text-amber-300 flex items-center justify-center bg-slate-950/70 py-1.5 px-2 rounded-lg border border-slate-800">
+            &mu; = sin[(A + D<sub>m</sub>)/2] &divide; sin(A/2)
+          </div>
+        </div>
+      </div>
+
+      <!-- Workspace Dual View: Ray Diagram & Spectrometer Vernier Readout -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left / Center: Interactive Visual Diagram (7 Cols) -->
+        <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-5 flex flex-col justify-between relative shadow-xl">
+          <!-- View header & Canvas view toggle -->
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-2">
+            <div class="flex items-center space-x-2">
+              <span class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
+              <h2 class="font-bold text-white text-sm sm:text-base tracking-wide flex items-center gap-2">
+                <span>Diagrammatic View:</span>
+                <span id="diagram-view-title" class="text-amber-400 font-mono text-sm">Cross-Sectional Ray Trace</span>
+              </h2>
+            </div>
+            <div class="flex items-center space-x-1.5 text-xs">
+              <button onclick="switchDiagramMode('ray')" id="btn-view-ray" class="px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-medium">Ray Path</button>
+              <button onclick="switchDiagramMode('bench')" id="btn-view-bench" class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 border border-slate-700 hover:text-white">Spectrometer Top View</button>
+            </div>
+          </div>
+
+          <!-- Ray Diagram Canvas -->
+          <div class="relative w-full aspect-[16/10] bg-slate-950 rounded-2xl overflow-hidden border border-slate-800/80 flex items-center justify-center">
+            <canvas id="diagramCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+            
+            <!-- Real-time Ray Optics Dynamic Annotation HUD -->
+            <div class="absolute bottom-2.5 left-2.5 bg-slate-900/90 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-700 text-[11px] font-mono text-slate-300 flex items-center space-x-3 pointer-events-none">
+              <span>i = <span id="hud-i" class="text-amber-400 font-bold">45.0°</span></span>
+              <span>r₁ = <span id="hud-r1" class="text-cyan-400">32.1°</span></span>
+              <span>r₂ = <span id="hud-r2" class="text-cyan-400">27.9°</span></span>
+              <span>&delta; = <span id="hud-delta" class="text-yellow-400 font-bold">24.2°</span></span>
+            </div>
+
+            <!-- Total Internal Reflection / Warning Badge -->
+            <div id="tir-warning" class="hidden absolute top-3 right-3 bg-red-950/90 border border-red-500 text-red-300 text-xs px-2.5 py-1 rounded-lg font-mono flex items-center space-x-1.5 animate-pulse">
+              <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              <span>Total Internal Reflection Occurred</span>
+            </div>
+          </div>
+
+          <!-- Interactive Controls under diagram -->
+          <div class="mt-4 pt-3 border-t border-slate-800 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="flex-1 min-w-[200px]">
+                <div class="flex justify-between font-mono mb-1 text-slate-300">
+                  <span class="flex items-center gap-1.5">
+                    <span class="inline-block w-2 h-2 rounded-full bg-amber-400"></span>
+                    Angle of Incidence (i):
+                  </span>
+                  <span id="slider-i-val" class="text-amber-400 font-bold text-sm">45.0°</span>
+                </div>
+                <input id="slider-i" type="range" min="25" max="85" step="0.2" value="45" oninput="onAngleIncidenceSlider(this.value)" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-400">
+              </div>
+
+              <!-- Quick Presets for Minimum Deviation -->
+              <div class="flex items-center space-x-1">
+                <button onclick="tuneIncidence(-0.2)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 font-mono text-xs">-0.2°</button>
+                <button onclick="tuneIncidence(+0.2)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 font-mono text-xs">+0.2°</button>
+                <button onclick="snapToMinimumDeviation()" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 font-semibold text-xs transition">
+                  Snap to D<sub>m</sub>
+                </button>
+              </div>
+            </div>
+
+            <!-- Helpful Physics Insight Tip -->
+            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[12px] text-slate-400 flex items-start gap-2">
+              <span class="text-amber-400 text-base leading-none">💡</span>
+              <p>
+                <strong class="text-slate-300">Notice the Hollow Glass Walls:</strong> The hollow prism is made of uniform parallel-faced glass plates. Since parallel plates cause lateral shift without angular deviation, the deviation is produced <em>purely by the liquid inside</em>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Spectrometer Eyepiece & Vernier Reader (5 Cols) -->
+        <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-5 flex flex-col justify-between space-y-4 shadow-xl">
+          
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+            <div>
+              <h2 class="font-bold text-white text-sm sm:text-base tracking-wide flex items-center gap-2">
+                <span>Vernier Scale & Reticle</span>
+              </h2>
+              <p class="text-xs text-slate-400">Take precise readings like an actual spectrometer</p>
+            </div>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">LC = 1' (0.5°/30)</span>
+          </div>
+
+          <!-- Eyepiece Split View: Left is Crosshairs with Slit, Right is Vernier Magnifier -->
+          <div class="grid grid-cols-2 gap-3">
+            
+            <!-- Telescope Eyepiece View (Crosswires + Sodium Slit) -->
+            <div class="flex flex-col items-center">
+              <div class="w-full aspect-square max-w-[170px] bg-slate-950 rounded-full border-4 border-slate-800 shadow-inner relative overflow-hidden flex items-center justify-center">
+                <!-- Eyepiece reticle canvas -->
+                <canvas id="reticleCanvas" class="w-full h-full block"></canvas>
+                <!-- Reticle ring reflection styling -->
+                <div class="absolute inset-0 rounded-full border border-white/5 pointer-events-none"></div>
+              </div>
+              <span class="text-[11px] text-slate-400 font-medium mt-1">Telescope Crosswire</span>
+              <span id="slit-status" class="text-[10px] font-mono text-emerald-400">In View (Centered)</span>
+            </div>
+
+            <!-- Vernier Magnifying Loupe View -->
+            <div class="flex flex-col items-center">
+              <div class="w-full aspect-square max-w-[170px] bg-slate-950 rounded-full border-4 border-amber-500/40 shadow-inner relative overflow-hidden flex items-center justify-center glow-yellow">
+                <canvas id="loupeCanvas" class="w-full h-full block"></canvas>
+                <div class="absolute inset-0 rounded-full pointer-events-none border border-amber-300/20 bg-gradient-to-tr from-amber-500/5 to-transparent"></div>
+              </div>
+              <span class="text-[11px] text-amber-300 font-medium mt-1">Magnified Vernier (V₁)</span>
+              <span id="loupe-hint" class="text-[10px] font-mono text-slate-400">Read MSR & VSR below</span>
+            </div>
+
+          </div>
+
+          <!-- Telescope Tangent Screw / Vernier Angle Controller -->
+          <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono">
+              <span class="text-slate-400">Telescope Position (&theta;):</span>
+              <span id="tele-angle-display" class="text-amber-300 font-bold text-sm">204° 12'</span>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+              <button onclick="adjustTelescope(-1.0)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-mono border border-slate-700">-1°</button>
+              <button onclick="adjustTelescope(-0.01667)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-mono border border-slate-700">-1'</button>
+              <input id="slider-tele" type="range" min="150" max="270" step="0.016666" value="204.2" oninput="onTelescopeSlider(this.value)" class="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-400">
+              <button onclick="adjustTelescope(+0.01667)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-mono border border-slate-700">+1'</button>
+              <button onclick="adjustTelescope(+1.0)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-mono border border-slate-700">+1°</button>
+            </div>
+            
+            <div class="flex justify-between items-center text-[10px] text-slate-500 font-mono">
+              <span>Coarse Control</span>
+              <button onclick="alignTelescopeToRay()" class="text-amber-400 hover:text-amber-300 underline font-sans font-semibold">Auto-Align Crosshair to Slit</button>
+            </div>
+          </div>
+
+          <!-- Reading Breakdown Display (MSR + VSR * LC) -->
+          <div class="bg-slate-800/60 p-3 rounded-2xl border border-slate-700/60 text-xs space-y-2">
+            <div class="flex items-center justify-between font-semibold text-slate-300">
+              <span>Spectrometer Reading Formula:</span>
+              <span class="text-slate-400 font-mono text-[11px]">Total = MSR + (VSR &times; 1')</span>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 text-center font-mono">
+              <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-700">
+                <span class="block text-[10px] text-slate-400 uppercase">M.S.R.</span>
+                <span id="readout-msr" class="text-white font-bold text-sm">204° 00'</span>
+              </div>
+              <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-700">
+                <span class="block text-[10px] text-slate-400 uppercase">V.S.R. (Div)</span>
+                <span id="readout-vsr" class="text-cyan-400 font-bold text-sm">12</span>
+              </div>
+              <div class="bg-slate-900/90 p-2 rounded-xl border border-amber-500/40 bg-amber-500/5">
+                <span class="block text-[10px] text-amber-400 uppercase">Total (V₁)</span>
+                <span id="readout-total" class="text-amber-300 font-bold text-sm">204° 12'</span>
+              </div>
+            </div>
+
+            <!-- Vernier 2 (V2 is 180 degrees opposite) -->
+            <div class="flex justify-between items-center text-[11px] text-slate-400 font-mono px-1">
+              <span>Opposite Vernier (V₂):</span>
+              <span id="readout-v2" class="text-slate-300 font-semibold">24° 12'</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="logCurrentReading()" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              <span>Record to Table</span>
+            </button>
+            <button onclick="testMyVernierReading()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition flex items-center justify-center gap-1.5">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Check My Reading</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ==================== SECTION 2: OBSERVATION TABLE ==================== -->
+    <div id="tab-table-content" class="hidden space-y-6">
+      
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+        
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <h2 class="text-lg font-bold text-white">Observation & Calculation Table</h2>
+            <p class="text-xs text-slate-400">Readings recorded from the spectrometer verniers</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="populateSampleData()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition">
+              Load Standard Practical Data
+            </button>
+            <button onclick="clearObservationTable()" class="px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/50 text-red-300 text-xs font-medium border border-red-800/40 transition">
+              Clear Table
+            </button>
+          </div>
+        </div>
+
+        <!-- Least Count Summary -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono">
+          <div>
+            <span class="text-slate-500 block">Value of 1 Main Scale Div (MSD):</span>
+            <span class="text-slate-200 font-semibold">0.5° = 30' (minutes)</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Total Vernier Divisions (n):</span>
+            <span class="text-slate-200 font-semibold">30 divisions (coincide with 29 MSD)</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Least Count of Spectrometer:</span>
+            <span class="text-amber-400 font-semibold">LC = 1 MSD / 30 = 1' = 0.0167°</span>
+          </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider font-mono border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-3">#</th>
+                <th class="py-3 px-3">Liquid Tested</th>
+                <th class="py-3 px-3">Angle of Prism (A)</th>
+                <th class="py-3 px-3">Direct Reading (R₀)</th>
+                <th class="py-3 px-3">Min. Deviation Pos (Rₘ)</th>
+                <th class="py-3 px-3">Angle of Min Dev (Dₘ)</th>
+                <th class="py-3 px-3">Calculated Index (&mu;)</th>
+                <th class="py-3 px-3">Std Index</th>
+                <th class="py-3 px-3">% Error</th>
+                <th class="py-3 px-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-slate-800/60 font-mono text-slate-200">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty table fallback message -->
+        <div id="table-empty-msg" class="text-center py-8 text-slate-500 text-xs">
+          No readings logged yet. Switch to the <strong>Interactive Lab</strong> tab, align the telescope crosshairs to the slit, and click <strong>"Record to Table"</strong>.
+        </div>
+
+        <!-- Practical Calculation Guide Card -->
+        <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800/80 text-xs space-y-2">
+          <h3 class="font-bold text-amber-400 flex items-center gap-2">
+            <span>📐 Step-by-Step Calculation Formula:</span>
+          </h3>
+          <p class="text-slate-300">
+            For equilateral hollow prism, angle $A = 60^\circ 00'$. Let minimum deviation angle be $D_m = |R_m - R_0|$.
+          </p>
+          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-amber-300 text-xs sm:text-sm">
+            &mu; = sin[(60° + D<sub>m</sub>) / 2] / sin(60° / 2) = sin[(60° + D<sub>m</sub>) / 2] / sin(30°) = 2 &times; sin[(60° + D<sub>m</sub>) / 2]
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ==================== SECTION 3: i - DELTA GRAPH ==================== -->
+    <div id="tab-graph-content" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-slate-800">
+          <div>
+            <h2 class="text-lg font-bold text-white">Angle of Incidence (i) vs. Deviation (&delta;) Curve</h2>
+            <p class="text-xs text-slate-400">Classic optical curve showing the minimum turning point $D_m$</p>
+          </div>
+          <div class="flex items-center space-x-2 text-xs">
+            <span class="text-slate-400">Liquid:</span>
+            <span id="graph-liquid-name" class="font-bold text-amber-400 font-mono">Water (H₂O)</span>
+          </div>
+        </div>
+
+        <!-- Canvas for Graph -->
+        <div class="w-full aspect-[16/9] max-h-[460px] bg-slate-950 rounded-2xl border border-slate-800 p-2 relative">
+          <canvas id="graphCanvas" class="w-full h-full block"></canvas>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block font-semibold">Minimum Turning Point (Dₘ):</span>
+            <span id="graph-dm-val" class="font-mono text-amber-400 text-base font-bold">23° 36' (23.60°)</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block font-semibold">Incidence Angle at Dₘ (iₘ):</span>
+            <span id="graph-im-val" class="font-mono text-cyan-400 text-base font-bold">41° 48' (41.80°)</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block font-semibold">Theoretical Refractive Index:</span>
+            <span id="graph-mu-val" class="font-mono text-emerald-400 text-base font-bold">&mu; = 1.333</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SECTION 4: THEORY, PROCEDURE & VIVA ==================== -->
+    <div id="tab-theory-content" class="hidden space-y-6">
+      
+      <!-- Theory & Mathematical Formulation -->
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <span class="w-2.5 h-6 bg-amber-400 rounded-full inline-block"></span>
+          Theory & Principle
+        </h2>
+        
+        <p class="text-sm text-slate-300 leading-relaxed">
+          A <strong>hollow glass prism</strong> is fabricated by cementing three optically flat, uniform rectangular glass plates of equal dimensions at an angle of $60^\circ$ to form an equilateral triangular prism with an enclosed hollow cavity. The cavity is filled with the liquid whose refractive index is to be determined.
+        </p>
+
+        <!-- The key physics question -->
+        <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs sm:text-sm text-amber-200 space-y-2">
+          <h3 class="font-bold text-amber-300 text-base">Key Question: Why doesn't the refractive index of the glass walls affect the deviation?</h3>
+          <p class="leading-relaxed">
+            Each wall of the hollow prism consists of a glass plate with <strong>strictly parallel faces</strong>. When a light ray traverses a medium bounded by parallel surfaces, the angle of refraction inside the glass is equal to the angle of incidence at the subsequent glass-liquid interface. Thus, the glass walls introduce <em>only a tiny lateral parallel displacement</em> of the ray, but <strong>zero net angular deviation</strong>. The entire angular deviation $\delta$ is produced solely by the fluid wedge itself!
+          </p>
+        </div>
+
+        <!-- Formula Derivation Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 text-xs sm:text-sm">
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+            <h4 class="font-bold text-white">General Ray Deviation:</h4>
+            <p class="text-slate-400">At the first face: $i_1$ is incidence angle, $r_1$ is refraction angle.</p>
+            <p class="text-slate-400">At the second face: $r_2$ is incidence angle, $i_2$ is emergence angle.</p>
+            <p class="font-mono text-cyan-300">A = r₁ + r₂</p>
+            <p class="font-mono text-cyan-300">&delta; = i₁ + i₂ - A</p>
+          </div>
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+            <h4 class="font-bold text-white">At Minimum Deviation ($D_m$):</h4>
+            <p class="text-slate-400">The ray travels symmetrically through the liquid parallel to the base:</p>
+            <p class="font-mono text-amber-300">i₁ = i₂ = i &emsp; and &emsp; r₁ = r₂ = r = A/2</p>
+            <p class="font-mono text-amber-300">Dₘ = 2i - A &implies; i = (A + Dₘ)/2</p>
+            <p class="font-mono text-emerald-300">&mu; = sin[(A + Dₘ)/2] / sin(A/2)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Precautions & Experimental Errors -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
+          <h3 class="font-bold text-amber-300 text-base flex items-center gap-2">
+            <span>⚠️ Precautions</span>
+          </h3>
+          <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+            <li>The glass plates of the hollow prism must be optically flat and of uniform thickness.</li>
+            <li>Ensure no air bubbles cling to the inner surfaces when pouring the liquid.</li>
+            <li>The prism must be placed firmly on the prism table so that its refracting edge is vertical and collinear with the axis of rotation.</li>
+            <li>The slit of the collimator should be made as narrow as possible for sharp coincidence with the vertical crosswire.</li>
+            <li>Always record readings of both Verniers ($V_1$ and $V_2$) to eliminate eccentricity error of the circular graduated disc.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
+          <h3 class="font-bold text-cyan-300 text-base flex items-center gap-2">
+            <span>🔬 Standard Refractive Indices (Sodium D-line, 589 nm)</span>
+          </h3>
+          <div class="text-xs space-y-2 font-mono">
+            <div class="flex justify-between border-b border-slate-800 pb-1">
+              <span class="text-slate-400">Distilled Water (H₂O)</span>
+              <span class="text-white font-bold">1.333</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-800 pb-1">
+              <span class="text-slate-400">Glycerine (C₃H₈O₃)</span>
+              <span class="text-white font-bold">1.473</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-800 pb-1">
+              <span class="text-slate-400">Ethyl Alcohol (C₂H₅OH)</span>
+              <span class="text-white font-bold">1.361</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-800 pb-1">
+              <span class="text-slate-400">Benzene (C₆H₆)</span>
+              <span class="text-white font-bold">1.501</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-800 pb-1">
+              <span class="text-slate-400">Kerosene Oil</span>
+              <span class="text-white font-bold">1.440</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Turpentine Oil</span>
+              <span class="text-white font-bold">1.470</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Viva Voce Quiz -->
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-bold text-white">Interactive Viva Voce Quiz</h3>
+            <p class="text-xs text-slate-400">Test your understanding with questions asked by external practical examiners</p>
+          </div>
+          <span id="quiz-score" class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">Score: 0 / 4</span>
+        </div>
+
+        <div id="quiz-container" class="space-y-4 text-xs sm:text-sm">
+          <!-- Quiz Item 1 -->
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+            <p class="font-semibold text-slate-200">Q1. What will be the deviation if the hollow prism is empty (filled with air)?</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <button onclick="checkQuiz(1, 0)" class="quiz-btn-1 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">A. Deviation is zero (ray goes straight without angular deviation)</button>
+              <button onclick="checkQuiz(1, 1)" class="quiz-btn-1 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">B. Deviation becomes 60°</button>
+              <button onclick="checkQuiz(1, 2)" class="quiz-btn-1 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">C. Ray undergoes Total Internal Reflection</button>
+              <button onclick="checkQuiz(1, 3)" class="quiz-btn-1 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">D. Spectrum of 7 colors is formed</button>
+            </div>
+            <p id="quiz-explain-1" class="hidden text-xs font-mono mt-1 pt-1 border-t border-slate-800 text-slate-400"></p>
+          </div>
+
+          <!-- Quiz Item 2 -->
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+            <p class="font-semibold text-slate-200">Q2. Why is monochromatic yellow light from a sodium vapor lamp used instead of white light?</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <button onclick="checkQuiz(2, 0)" class="quiz-btn-2 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">A. Sodium light has zero refraction</button>
+              <button onclick="checkQuiz(2, 1)" class="quiz-btn-2 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">B. To prevent dispersion into a colored band and obtain a single sharp spectral line</button>
+              <button onclick="checkQuiz(2, 2)" class="quiz-btn-2 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">C. Sodium light cannot be reflected</button>
+              <button onclick="checkQuiz(2, 3)" class="quiz-btn-2 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">D. Because white light damages the hollow prism glass</button>
+            </div>
+            <p id="quiz-explain-2" class="hidden text-xs font-mono mt-1 pt-1 border-t border-slate-800 text-slate-400"></p>
+          </div>
+
+          <!-- Quiz Item 3 -->
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+            <p class="font-semibold text-slate-200">Q3. Inside the prism at the minimum deviation position, how does the refracted ray travel?</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <button onclick="checkQuiz(3, 0)" class="quiz-btn-3 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">A. Perpendicular to the prism base</button>
+              <button onclick="checkQuiz(3, 1)" class="quiz-btn-3 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">B. Parallel to the base of the prism</button>
+              <button onclick="checkQuiz(3, 2)" class="quiz-btn-3 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">C. Coinciding with the normal</button>
+              <button onclick="checkQuiz(3, 3)" class="quiz-btn-3 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">D. It curves backwards</button>
+            </div>
+            <p id="quiz-explain-3" class="hidden text-xs font-mono mt-1 pt-1 border-t border-slate-800 text-slate-400"></p>
+          </div>
+
+          <!-- Quiz Item 4 -->
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+            <p class="font-semibold text-slate-200">Q4. Why are two verniers ($V_1$ and $V_2$) provided at $180^\circ$ on the spectrometer disc?</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <button onclick="checkQuiz(4, 0)" class="quiz-btn-4 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">A. To eliminate the error of eccentricity between the axis of rotation and the graduated circle</button>
+              <button onclick="checkQuiz(4, 1)" class="quiz-btn-4 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">B. One is for red light and the other is for violet light</button>
+              <button onclick="checkQuiz(4, 2)" class="quiz-btn-4 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">C. As a backup in case one gets scratched</button>
+              <button onclick="checkQuiz(4, 3)" class="quiz-btn-4 p-2 rounded-lg bg-slate-900 border border-slate-800 text-left hover:border-amber-400 transition">D. To double the magnification</button>
+            </div>
+            <p id="quiz-explain-4" class="hidden text-xs font-mono mt-1 pt-1 border-t border-slate-800 text-slate-400"></p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Modal for "Check My Reading" Quiz / Test -->
+  <div id="check-reading-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+        <h3 class="text-base font-bold text-white">Check Your Vernier Reading</h3>
+        <button onclick="closeCheckReadingModal()" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+      <p class="text-xs text-slate-300">
+        Look at the magnified circular scale loupe. Enter your observed readings to verify if your practical reading skills are accurate:
+      </p>
+      
+      <div class="space-y-3 font-mono text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Main Scale Reading (M.S.R. in degrees, e.g. 204.5 for 204° 30'):</label>
+          <input id="user-msr-input" type="number" step="0.5" placeholder="e.g. 204.0" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">Vernier Coincident Division (V.S.R. 0 to 30):</label>
+          <input id="user-vsr-input" type="number" min="0" max="30" step="1" placeholder="e.g. 12" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+      </div>
+
+      <div id="user-check-result" class="text-xs font-mono p-2.5 rounded-lg hidden"></div>
+
+      <div class="flex justify-end space-x-2 pt-2">
+        <button onclick="closeCheckReadingModal()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs">Close</button>
+        <button onclick="verifyUserReading()" class="px-4 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400">Verify Reading</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Context for Realistic Mechanical Knobs -->
+  <script>
+    // Audio synthesizer for laboratory clicks
+    let audioCtx = null;
+    function playClickSound(freq = 600, duration = 0.02) {
+      try {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) audioCtx = new AudioContext();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        // Audio error silent fallback
+      }
+    }
+  </script>
+
+  <!-- Application Logic & Physics Engine -->
+  <script>
+    // --- Physics Constant & Liquid Database ---
+    const LIQUIDS = {
+      water: { name: 'Water (Distilled)', formula: 'H₂O', mu: 1.3330, color: 'rgba(56, 189, 248, 0.22)', strokeColor: '#38bdf8' },
+      glycerine: { name: 'Glycerine (Pure)', formula: 'C₃H₈O₃', mu: 1.4730, color: 'rgba(251, 191, 36, 0.25)', strokeColor: '#fbbf24' },
+      ethanol: { name: 'Ethyl Alcohol', formula: 'C₂H₅OH', mu: 1.3610, color: 'rgba(192, 132, 252, 0.22)', strokeColor: '#c084fc' },
+      benzene: { name: 'Benzene', formula: 'C₆H₆', mu: 1.5010, color: 'rgba(244, 63, 94, 0.22)', strokeColor: '#f43f5e' },
+      kerosene: { name: 'Kerosene Oil', formula: 'Mix', mu: 1.4420, color: 'rgba(234, 179, 8, 0.28)', strokeColor: '#eab308' },
+      turpentine: { name: 'Turpentine Oil', formula: 'Pinene', mu: 1.4700, color: 'rgba(245, 158, 11, 0.26)', strokeColor: '#f59e0b' },
+      unknown: { name: 'Unknown Liquid X', formula: '???', mu: 1.3950, color: 'rgba(168, 85, 247, 0.25)', strokeColor: '#a855f7' }
+    };
+
+    // State Variables
+    let currentLiquidKey = 'water';
+    let prismAngle = 60.0; // Prism angle A in degrees
+    let incidenceAngleDeg = 45.0; // Angle i in degrees
+    let glassIndex = 1.517; // Crown glass plate index
+    let glassThickness = 6.0; // Glass wall thickness in mm/pixels
+    let experimentStage = 'dev'; // 'direct', 'dev', 'prism_angle'
+    let diagramMode = 'ray'; // 'ray' or 'bench'
+
+    // Spectrometer geometry parameters
+    const DIRECT_RAY_ANGLE = 180.00; // Collimator straight through position
+    let telescopeAngle = 204.20; // Current position of telescope in degrees
+    let currentDeviationRayAngle = 204.20; // Calculated exit ray position
+
+    // Observation Table Entries
+    let observationRows = [];
+
+    // Least count definitions
+    const MSD_DEG = 0.5; // 30 minutes
+    const VSD_COUNT = 30;
+    const LC_DEG = MSD_DEG / VSD_COUNT; // 1 minute = 1/60 degree
+
+    // Canvases & Contexts
+    const diagramCanvas = document.getElementById('diagramCanvas');
+    const dCtx = diagramCanvas.getContext('2d');
+    const reticleCanvas = document.getElementById('reticleCanvas');
+    const rCtx = reticleCanvas.getContext('2d');
+    const loupeCanvas = document.getElementById('loupeCanvas');
+    const lCtx = loupeCanvas.getContext('2d');
+    const graphCanvas = document.getElementById('graphCanvas');
+    const gCtx = graphCanvas.getContext('2d');
+
+    // --- Helper Functions for Angle Formatting ---
+    function degToDMS(deg) {
+      let positiveDeg = ((deg % 360) + 360) % 360;
+      let d = Math.floor(positiveDeg);
+      let m = Math.round((positiveDeg - d) * 60);
+      if (m === 60) {
+        d += 1;
+        m = 0;
+      }
+      return `${d}° ${m.toString().padStart(2, '0')}'`;
+    }
+
+    // Convert angle to Vernier Reading Components (MSR & VSR)
+    function calculateVernierReadings(angleDeg) {
+      let norm = ((angleDeg % 360) + 360) % 360;
+      // Main scale divisions are every 0.5 degrees (30')
+      let totalHalves = Math.floor(norm / MSD_DEG);
+      let msr = totalHalves * MSD_DEG;
+      let remainderDeg = norm - msr;
+      let vsr = Math.round(remainderDeg / LC_DEG);
+      if (vsr >= 30) {
+        vsr = 0;
+        msr += MSD_DEG;
+      }
+      let total = msr + (vsr * LC_DEG);
+      return {
+        msr: msr,
+        vsr: vsr,
+        total: total,
+        v2Total: (total + 180) % 360
+      };
+    }
+
+    // Calculate minimum deviation for equilateral prism
+    function getTheoreticalMinDeviation(mu, A = 60.0) {
+      const A_rad = (A * Math.PI) / 180;
+      const sin_r = Math.sin(A_rad / 2);
+      const sin_i = mu * sin_r;
+      if (sin_i > 1) return null; // TIR
+      const i_rad = Math.asin(sin_i);
+      const Dm_rad = (2 * i_rad) - A_rad;
+      return (Dm_rad * 180) / Math.PI;
+    }
+
+    // Refraction ray trace calculation
+    function tracePrismRay(iDeg, muLiquid, A_deg = 60.0) {
+      const i_rad = (iDeg * Math.PI) / 180;
+      const A_rad = (A_deg * Math.PI) / 180;
+
+      // Face 1 refraction into liquid (accounting for parallel glass plate)
+      const sin_r1 = Math.sin(i_rad) / muLiquid;
+      if (Math.abs(sin_r1) > 1.0) {
+        return { tir: true };
+      }
+      const r1_rad = Math.asin(sin_r1);
+      const r2_rad = A_rad - r1_rad;
+
+      // Face 2 refraction out of liquid into air
+      const sin_e = muLiquid * Math.sin(r2_rad);
+      if (Math.abs(sin_e) > 1.0) {
+        return { tir: true, r1: (r1_rad * 180) / Math.PI, r2: (r2_rad * 180) / Math.PI };
+      }
+      const e_rad = Math.asin(sin_e);
+      const delta_rad = i_rad + e_rad - A_rad;
+
+      return {
+        tir: false,
+        i: iDeg,
+        r1: (r1_rad * 180) / Math.PI,
+        r2: (r2_rad * 180) / Math.PI,
+        e: (e_rad * 180) / Math.PI,
+        delta: (delta_rad * 180) / Math.PI
+      };
+    }
+
+    // Update Spectrometer Ray Position based on experiment stage
+    function updateSpectrometerState() {
+      const liquid = LIQUIDS[currentLiquidKey];
+      const ray = tracePrismRay(incidenceAngleDeg, liquid.mu, prismAngle);
+
+      if (experimentStage === 'direct') {
+        currentDeviationRayAngle = DIRECT_RAY_ANGLE; // 180°
+      } else if (experimentStage === 'prism_angle') {
+        // Reflected from face 1 or face 2 for prism angle: 180° ± 2*30° = 120° or 240°
+        currentDeviationRayAngle = DIRECT_RAY_ANGLE + 60.0;
+      } else {
+        // Minimum deviation mode
+        if (!ray.tir) {
+          currentDeviationRayAngle = DIRECT_RAY_ANGLE + ray.delta;
+        }
+      }
+
+      // Update HUD values
+      const hudI = document.getElementById('hud-i');
+      const hudR1 = document.getElementById('hud-r1');
+      const hudR2 = document.getElementById('hud-r2');
+      const hudDelta = document.getElementById('hud-delta');
+      const tirWarning = document.getElementById('tir-warning');
+
+      if (ray.tir) {
+        tirWarning.classList.remove('hidden');
+        hudDelta.innerText = 'T.I.R.';
+      } else {
+        tirWarning.classList.add('hidden');
+        hudI.innerText = `${ray.i.toFixed(1)}°`;
+        hudR1.innerText = `${ray.r1.toFixed(1)}°`;
+        hudR2.innerText = `${ray.r2.toFixed(1)}°`;
+        hudDelta.innerText = `${ray.delta.toFixed(1)}°`;
+      }
+
+      renderAllCanvases();
+      updateReadoutPanels();
+    }
+
+    // Update Digital Vernier Numbers in the Right Panel
+    function updateReadoutPanels() {
+      const v = calculateVernierReadings(telescopeAngle);
+      
+      document.getElementById('tele-angle-display').innerText = degToDMS(telescopeAngle);
+      document.getElementById('slider-tele').value = telescopeAngle;
+      
+      // Breakdown
+      document.getElementById('readout-msr').innerText = degToDMS(v.msr);
+      document.getElementById('readout-vsr').innerText = v.vsr.toString();
+      document.getElementById('readout-total').innerText = degToDMS(v.total);
+      document.getElementById('readout-v2').innerText = degToDMS(v.v2Total);
+
+      // Check alignment with slit
+      const diff = Math.abs(telescopeAngle - currentDeviationRayAngle);
+      const slitStatus = document.getElementById('slit-status');
+      if (diff < 0.05) {
+        slitStatus.innerText = 'In View (Centered)';
+        slitStatus.className = 'text-[10px] font-mono text-emerald-400 font-bold';
+      } else if (diff < 1.8) {
+        slitStatus.innerText = 'Visible in Reticle';
+        slitStatus.className = 'text-[10px] font-mono text-amber-400';
+      } else {
+        slitStatus.innerText = 'Out of View';
+        slitStatus.className = 'text-[10px] font-mono text-slate-500';
+      }
+    }
+
+    // --- CANVAS 1: DIAGRAMMATIC RAY TRACE VIEW ---
+    function drawRayDiagram() {
+      const w = diagramCanvas.width;
+      const h = diagramCanvas.height;
+      dCtx.clearRect(0, 0, w, h);
+
+      if (diagramMode === 'bench') {
+        drawSpectrometerBenchView(w, h);
+        return;
+      }
+
+      // Draw subtle grid
+      dCtx.strokeStyle = 'rgba(30, 41, 59, 0.4)';
+      dCtx.lineWidth = 1;
+      const step = 30;
+      for (let x = 0; x < w; x += step) {
+        dCtx.beginPath();
+        dCtx.moveTo(x, 0);
+        dCtx.lineTo(x, h);
+        dCtx.stroke();
+      }
+      for (let y = 0; y < h; y += step) {
+        dCtx.beginPath();
+        dCtx.moveTo(0, y);
+        dCtx.lineTo(w, y);
+        dCtx.stroke();
+      }
+
+      // Equilateral hollow prism vertices
+      const cx = w * 0.52;
+      const cy = h * 0.58;
+      const side = Math.min(w, h) * 0.56;
+      const height = (Math.sqrt(3) / 2) * side;
+
+      // Outer Apex (A), Bottom Left (B), Bottom Right (C)
+      const A = { x: cx, y: cy - (2/3) * height };
+      const B = { x: cx - side / 2, y: cy + (1/3) * height };
+      const C = { x: cx + side / 2, y: cy + (1/3) * height };
+
+      // Inner hollow cavity vertices (offset inwards by glass thickness)
+      const t = 14; // visual glass plate thickness
+      const innerA = { x: cx, y: A.y + t * 1.5 };
+      const innerB = { x: B.x + t * 1.73, y: B.y - t };
+      const innerC = { x: C.x - t * 1.73, y: C.y - t };
+
+      // 1. Draw Glass Wall (outer triangle filled with glass tint)
+      dCtx.beginPath();
+      dCtx.moveTo(A.x, A.y);
+      dCtx.lineTo(B.x, B.y);
+      dCtx.lineTo(C.x, C.y);
+      dCtx.closePath();
+      dCtx.fillStyle = 'rgba(148, 163, 184, 0.18)';
+      dCtx.fill();
+      dCtx.strokeStyle = 'rgba(203, 213, 225, 0.7)';
+      dCtx.lineWidth = 2;
+      dCtx.stroke();
+
+      // 2. Draw Liquid Cavity
+      const liquid = LIQUIDS[currentLiquidKey];
+      dCtx.beginPath();
+      dCtx.moveTo(innerA.x, innerA.y);
+      dCtx.lineTo(innerB.x, innerB.y);
+      dCtx.lineTo(innerC.x, innerC.y);
+      dCtx.closePath();
+      dCtx.fillStyle = liquid.color;
+      dCtx.fill();
+      dCtx.strokeStyle = liquid.strokeColor;
+      dCtx.lineWidth = 1.5;
+      dCtx.stroke();
+
+      // Label Prism Cavity & Angle A
+      dCtx.fillStyle = '#94a3b8';
+      dCtx.font = 'bold 12px Inter, sans-serif';
+      dCtx.textAlign = 'center';
+      dCtx.fillText(`Liquid: ${liquid.name}`, cx, cy + 20);
+      dCtx.font = '10px monospace';
+      dCtx.fillText(`μ = ${liquid.mu.toFixed(4)}`, cx, cy + 36);
+
+      // Apex Angle A arc & label
+      dCtx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+      dCtx.lineWidth = 1.5;
+      dCtx.beginPath();
+      dCtx.arc(A.x, A.y, 28, Math.PI / 3, (2 * Math.PI) / 3);
+      dCtx.stroke();
+      dCtx.fillStyle = '#fbbf24';
+      dCtx.fillText(`A = ${prismAngle.toFixed(1)}°`, A.x, A.y + 44);
+
+      // --- Optical Ray Tracing Simulation ---
+      // Left refracting face is AB: angle is 60° with horizontal
+      const faceAngle = Math.atan2(B.y - A.y, B.x - A.x); // Normal angle is faceAngle - PI/2
+      const normalAngle = faceAngle - Math.PI / 2;
+
+      // Incident point on face AB
+      const incidentFraction = 0.52;
+      const P1 = {
+        x: A.x + (B.x - A.x) * incidentFraction,
+        y: A.y + (B.y - A.y) * incidentFraction
+      };
+
+      // Incident ray direction
+      const iRad = (incidenceAngleDeg * Math.PI) / 180;
+      const rayInAngle = normalAngle + iRad; // Ray heading towards P1
+
+      const rayLength = 190;
+      const P0 = {
+        x: P1.x - Math.cos(rayInAngle) * rayLength,
+        y: P1.y - Math.sin(rayInAngle) * rayLength
+      };
+
+      // Draw Normal at Face 1
+      dCtx.save();
+      dCtx.setLineDash([4, 4]);
+      dCtx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+      dCtx.lineWidth = 1;
+      dCtx.beginPath();
+      dCtx.moveTo(P1.x - Math.cos(normalAngle) * 55, P1.y - Math.sin(normalAngle) * 55);
+      dCtx.lineTo(P1.x + Math.cos(normalAngle) * 70, P1.y + Math.sin(normalAngle) * 70);
+      dCtx.stroke();
+      dCtx.restore();
+
+      // Trace through liquid
+      const ray = tracePrismRay(incidenceAngleDeg, liquid.mu, prismAngle);
+
+      // Draw Incident Ray
+      dCtx.strokeStyle = '#facc15'; // Sodium yellow
+      dCtx.lineWidth = 2.5;
+      dCtx.shadowColor = '#eab308';
+      dCtx.shadowBlur = 10;
+      dCtx.beginPath();
+      dCtx.moveTo(P0.x, P0.y);
+      dCtx.lineTo(P1.x, P1.y);
+      dCtx.stroke();
+      dCtx.shadowBlur = 0; // reset
+
+      // Arrow on Incident Ray
+      drawRayArrow(P0.x, P0.y, P1.x, P1.y, '#facc15');
+
+      if (!ray.tir) {
+        // Refracted ray inside prism
+        const r1Rad = (ray.r1 * Math.PI) / 180;
+        const rayLiquidAngle = normalAngle + r1Rad;
+
+        // Find intersection with face AC
+        // AC equation:
+        const tAC = intersectRayWithSegment(P1.x, P1.y, rayLiquidAngle, A.x, A.y, C.x, C.y);
+        const P2 = tAC ? { x: P1.x + Math.cos(rayLiquidAngle) * tAC, y: P1.y + Math.sin(rayLiquidAngle) * tAC } : { x: cx + 60, y: cy };
+
+        // Draw Inside Ray
+        dCtx.strokeStyle = '#38bdf8';
+        dCtx.lineWidth = 2.5;
+        dCtx.shadowColor = '#0284c7';
+        dCtx.shadowBlur = 8;
+        dCtx.beginPath();
+        dCtx.moveTo(P1.x, P1.y);
+        dCtx.lineTo(P2.x, P2.y);
+        dCtx.stroke();
+        dCtx.shadowBlur = 0;
+
+        // Normal at Face 2 (AC)
+        const face2Angle = Math.atan2(C.y - A.y, C.x - A.x);
+        const normal2Angle = face2Angle + Math.PI / 2;
+
+        dCtx.save();
+        dCtx.setLineDash([4, 4]);
+        dCtx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+        dCtx.lineWidth = 1;
+        dCtx.beginPath();
+        dCtx.moveTo(P2.x - Math.cos(normal2Angle) * 55, P2.y - Math.sin(normal2Angle) * 55);
+        dCtx.lineTo(P2.x + Math.cos(normal2Angle) * 70, P2.y + Math.sin(normal2Angle) * 70);
+        dCtx.stroke();
+        dCtx.restore();
+
+        // Emergent Ray from P2
+        const eRad = (ray.e * Math.PI) / 180;
+        const emergentAngle = normal2Angle - eRad;
+        const P3 = {
+          x: P2.x + Math.cos(emergentAngle) * rayLength,
+          y: P2.y + Math.sin(emergentAngle) * rayLength
+        };
+
+        dCtx.strokeStyle = '#facc15';
+        dCtx.lineWidth = 2.5;
+        dCtx.shadowColor = '#eab308';
+        dCtx.shadowBlur = 10;
+        dCtx.beginPath();
+        dCtx.moveTo(P2.x, P2.y);
+        dCtx.lineTo(P3.x, P3.y);
+        dCtx.stroke();
+        dCtx.shadowBlur = 0;
+
+        drawRayArrow(P2.x, P2.y, P3.x, P3.y, '#facc15');
+
+        // Draw Backward and Forward Ray Extensions to show Angle of Deviation (δ)
+        dCtx.save();
+        dCtx.setLineDash([3, 3]);
+        dCtx.strokeStyle = 'rgba(250, 204, 21, 0.45)';
+        dCtx.lineWidth = 1.2;
+
+        // Extension of incident ray
+        const extP1 = { x: P1.x + Math.cos(rayInAngle) * 120, y: P1.y + Math.sin(rayInAngle) * 120 };
+        dCtx.beginPath();
+        dCtx.moveTo(P1.x, P1.y);
+        dCtx.lineTo(extP1.x, extP1.y);
+        dCtx.stroke();
+
+        // Backward extension of emergent ray
+        const extP2 = { x: P2.x - Math.cos(emergentAngle) * 90, y: P2.y - Math.sin(emergentAngle) * 90 };
+        dCtx.beginPath();
+        dCtx.moveTo(P2.x, P2.y);
+        dCtx.lineTo(extP2.x, extP2.y);
+        dCtx.stroke();
+        dCtx.restore();
+
+        // Label Angle of Incidence (i) and Deviation (δ)
+        dCtx.fillStyle = '#facc15';
+        dCtx.font = '11px monospace';
+        dCtx.fillText(`i = ${incidenceAngleDeg.toFixed(1)}°`, P1.x - 38, P1.y - 18);
+        dCtx.fillText(`δ = ${ray.delta.toFixed(1)}°`, P2.x + 35, P2.y - 25);
+      } else {
+        // Show Total Internal Reflection inside prism
+        dCtx.strokeStyle = '#ef4444';
+        dCtx.lineWidth = 2;
+        dCtx.beginPath();
+        dCtx.moveTo(P1.x, P1.y);
+        dCtx.lineTo(P1.x + 60, P1.y + 40);
+        dCtx.stroke();
+      }
+    }
+
+    // Helper: Draw directional arrow on ray
+    function drawRayArrow(x1, y1, x2, y2, color) {
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const head = 9;
+      dCtx.fillStyle = color;
+      dCtx.beginPath();
+      dCtx.moveTo(mx + Math.cos(angle) * head, my + Math.sin(angle) * head);
+      dCtx.lineTo(mx + Math.cos(angle + 2.5) * head, my + Math.sin(angle + 2.5) * head);
+      dCtx.lineTo(mx + Math.cos(angle - 2.5) * head, my + Math.sin(angle - 2.5) * head);
+      dCtx.closePath();
+      dCtx.fill();
+    }
+
+    // Intersection of ray with line segment
+    function intersectRayWithSegment(px, py, rayAngle, x1, y1, x2, y2) {
+      const dx = Math.cos(rayAngle);
+      const dy = Math.sin(rayAngle);
+      const sx = x2 - x1;
+      const sy = y2 - y1;
+      const denom = dx * sy - dy * sx;
+      if (Math.abs(denom) < 1e-6) return null;
+      const t = ((x1 - px) * sy - (y1 - py) * sx) / denom;
+      const u = ((x1 - px) * dy - (y1 - py) * dx) / denom;
+      if (t > 0 && u >= 0 && u <= 1) return t;
+      return null;
+    }
+
+    // Canvas Mode 2: Spectrometer Physical Bench Top-Down View
+    function drawSpectrometerBenchView(w, h) {
+      const cx = w * 0.5;
+      const cy = h * 0.55;
+      const r = Math.min(w, h) * 0.38;
+
+      // Outer graduated circle ring
+      dCtx.strokeStyle = '#334155';
+      dCtx.lineWidth = 14;
+      dCtx.beginPath();
+      dCtx.arc(cx, cy, r, 0, 2 * Math.PI);
+      dCtx.stroke();
+
+      // Collimator tube (fixed at 180° / left)
+      dCtx.fillStyle = '#475569';
+      dCtx.fillRect(cx - r - 85, cy - 12, 85, 24);
+      // Sodium lamp source indicator
+      dCtx.fillStyle = '#f59e0b';
+      dCtx.beginPath();
+      dCtx.arc(cx - r - 95, cy, 14, 0, 2 * Math.PI);
+      dCtx.fill();
+      dCtx.fillStyle = '#ffffff';
+      dCtx.font = '10px sans-serif';
+      dCtx.textAlign = 'center';
+      dCtx.fillText('Na Source', cx - r - 95, cy + 26);
+
+      // Central Prism Table
+      dCtx.fillStyle = '#1e293b';
+      dCtx.beginPath();
+      dCtx.arc(cx, cy, 46, 0, 2 * Math.PI);
+      dCtx.fill();
+      dCtx.strokeStyle = '#64748b';
+      dCtx.lineWidth = 2;
+      dCtx.stroke();
+
+      // Hollow Prism on Table
+      dCtx.fillStyle = LIQUIDS[currentLiquidKey].color;
+      dCtx.strokeStyle = '#cbd5e1';
+      dCtx.lineWidth = 1.5;
+      dCtx.beginPath();
+      const pSide = 40;
+      dCtx.moveTo(cx, cy - 25);
+      dCtx.lineTo(cx - pSide / 2, cy + 18);
+      dCtx.lineTo(cx + pSide / 2, cy + 18);
+      dCtx.closePath();
+      dCtx.fill();
+      dCtx.stroke();
+
+      // Telescope arm at current telescopeAngle
+      const tAngleRad = ((telescopeAngle - 180) * Math.PI) / 180;
+      const tx = cx + Math.cos(tAngleRad) * r;
+      const ty = cy + Math.sin(tAngleRad) * r;
+
+      dCtx.save();
+      dCtx.translate(tx, ty);
+      dCtx.rotate(tAngleRad);
+      dCtx.fillStyle = '#0284c7';
+      dCtx.fillRect(0, -10, 75, 20); // Telescope body
+      dCtx.fillStyle = '#38bdf8';
+      dCtx.beginPath();
+      dCtx.arc(75, 0, 13, 0, 2 * Math.PI);
+      dCtx.fill();
+      dCtx.restore();
+
+      // Direct ray / Deviation ray line
+      const rayAngleRad = ((currentDeviationRayAngle - 180) * Math.PI) / 180;
+      dCtx.strokeStyle = '#facc15';
+      dCtx.lineWidth = 2;
+      dCtx.setLineDash([4, 4]);
+      dCtx.beginPath();
+      dCtx.moveTo(cx, cy);
+      dCtx.lineTo(cx + Math.cos(rayAngleRad) * (r + 40), cy + Math.sin(rayAngleRad) * (r + 40));
+      dCtx.stroke();
+      dCtx.setLineDash([]);
+
+      // Labeling
+      dCtx.fillStyle = '#94a3b8';
+      dCtx.font = '11px sans-serif';
+      dCtx.fillText('Collimator', cx - r - 45, cy - 18);
+      dCtx.fillText('Telescope', tx, ty - 16);
+    }
+
+    // --- CANVAS 2: TELESCOPE RETICLE & CROSSHAIR VIEW ---
+    function drawReticleView() {
+      const w = reticleCanvas.width;
+      const h = reticleCanvas.height;
+      rCtx.clearRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h / 2;
+      const r = w / 2;
+
+      // Dark eyepiece interior
+      rCtx.fillStyle = '#030712';
+      rCtx.fillRect(0, 0, w, h);
+
+      // Optical circle field of view
+      rCtx.save();
+      rCtx.beginPath();
+      rCtx.arc(cx, cy, r - 4, 0, 2 * Math.PI);
+      rCtx.clip();
+
+      // Faint ambient light glow
+      rCtx.fillStyle = '#0f172a';
+      rCtx.fillRect(0, 0, w, h);
+
+      // Compute position of yellow sodium slit relative to telescope
+      // Center occurs when telescopeAngle === currentDeviationRayAngle
+      const diffDeg = telescopeAngle - currentDeviationRayAngle;
+      // Let Field of View of eyepiece be ~3.0 degrees across
+      const fovDeg = 3.0;
+      const pixelPerDeg = (w * 0.8) / fovDeg;
+      const slitX = cx - (diffDeg * pixelPerDeg);
+
+      // Draw Slit if in field of view
+      if (slitX > -20 && slitX < w + 20) {
+        // Bright sodium yellow vertical slit image
+        rCtx.shadowColor = '#eab308';
+        rCtx.shadowBlur = 18;
+        rCtx.fillStyle = '#fde047';
+        rCtx.fillRect(slitX - 2.5, 0, 5, h);
+
+        // Core line
+        rCtx.fillStyle = '#ffffff';
+        rCtx.fillRect(slitX - 0.75, 0, 1.5, h);
+        rCtx.shadowBlur = 0;
+      }
+
+      // Draw Crosswires
+      rCtx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      rCtx.lineWidth = 1;
+
+      // Vertical wire
+      rCtx.beginPath();
+      rCtx.moveTo(cx, 0);
+      rCtx.lineTo(cx, h);
+      rCtx.stroke();
+
+      // Horizontal wire
+      rCtx.beginPath();
+      rCtx.moveTo(0, cy);
+      rCtx.lineTo(w, cy);
+      rCtx.stroke();
+
+      rCtx.restore();
+    }
+
+    // --- CANVAS 3: MAGNIFIED VERNIER SCALE LOUPE ---
+    function drawVernierLoupe() {
+      const w = loupeCanvas.width;
+      const h = loupeCanvas.height;
+      lCtx.clearRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h / 2;
+      const r = w / 2;
+
+      // Loupe circular clipping
+      lCtx.save();
+      lCtx.beginPath();
+      lCtx.arc(cx, cy, r - 3, 0, 2 * Math.PI);
+      lCtx.clip();
+
+      // Matte brass/steel background of vernier disc
+      lCtx.fillStyle = '#1e293b';
+      lCtx.fillRect(0, 0, w, h);
+
+      // Dividing arc line between Main Scale (top) and Vernier Scale (bottom)
+      const splitY = cy - 2;
+      lCtx.strokeStyle = '#475569';
+      lCtx.lineWidth = 2;
+      lCtx.beginPath();
+      lCtx.moveTo(0, splitY);
+      lCtx.lineTo(w, splitY);
+      lCtx.stroke();
+
+      // We center on telescopeAngle
+      const angle = telescopeAngle;
+      // Visual magnification: 1 degree spans ~160 pixels
+      const scalePixelsPerDegree = 160;
+
+      // 1. Draw Main Scale (MSD = 0.5° = 30') at top half
+      // The main scale graduation moves opposite to telescope angle
+      lCtx.textAlign = 'center';
+      lCtx.textBaseline = 'bottom';
+      lCtx.font = '10px JetBrains Mono, monospace';
+
+      const minDeg = Math.floor(angle - 2);
+      const maxDeg = Math.ceil(angle + 2);
+
+      for (let deg = minDeg; deg <= maxDeg; deg += 0.5) {
+        const x = cx + (deg - angle) * scalePixelsPerDegree;
+        const isWholeDegree = Math.abs(deg - Math.round(deg)) < 0.01;
+        const isFiveDegree = Math.abs(deg % 5) < 0.01;
+        const markHeight = isFiveDegree ? 24 : (isWholeDegree ? 18 : 12);
+
+        lCtx.strokeStyle = isFiveDegree ? '#f8fafc' : (isWholeDegree ? '#cbd5e1' : '#94a3b8');
+        lCtx.lineWidth = isWholeDegree ? 1.5 : 1;
+
+        lCtx.beginPath();
+        lCtx.moveTo(x, splitY);
+        lCtx.lineTo(x, splitY - markHeight);
+        lCtx.stroke();
+
+        // Degree label
+        if (isWholeDegree && x > 20 && x < w - 20) {
+          lCtx.fillStyle = '#f8fafc';
+          lCtx.fillText(`${Math.round(deg)}°`, x, splitY - markHeight - 3);
+        }
+      }
+
+      // 2. Draw Vernier Scale (VSR from 0 to 30) at bottom half
+      // Vernier least count = 1' = 1/60 deg. 30 divisions match 29 MSD = 14.5 degrees.
+      // So 1 Vernier division = 14.5 / 30 = 29/60 degree.
+      // The '0' of vernier aligns at telescopeAngle
+      lCtx.textBaseline = 'top';
+
+      for (let v = 0; v <= 30; v++) {
+        // Position of vernier division v:
+        const vDegreeOffset = v * (29 / 60);
+        const x = cx + vDegreeOffset * scalePixelsPerDegree;
+
+        if (x < -10 || x > w + 10) continue;
+
+        const isDecade = (v % 10 === 0);
+        const isFive = (v % 5 === 0);
+        const vMarkHeight = isDecade ? 24 : (isFive ? 18 : 12);
+
+        // Highlight coincident line
+        const currVSR = calculateVernierReadings(telescopeAngle).vsr;
+        const isCoincident = (v === currVSR);
+
+        lCtx.strokeStyle = isCoincident ? '#38bdf8' : (isDecade ? '#facc15' : '#e2e8f0');
+        lCtx.lineWidth = isCoincident ? 2 : (isDecade ? 1.5 : 1);
+
+        lCtx.beginPath();
+        lCtx.moveTo(x, splitY);
+        lCtx.lineTo(x, splitY + vMarkHeight);
+        lCtx.stroke();
+
+        if (isDecade && x > 15 && x < w - 15) {
+          lCtx.fillStyle = '#facc15';
+          lCtx.fillText(v.toString(), x, splitY + vMarkHeight + 3);
+        }
+      }
+
+      // Vernier Scale Zero Mark Arrow
+      lCtx.fillStyle = '#38bdf8';
+      lCtx.beginPath();
+      lCtx.moveTo(cx, splitY + 3);
+      lCtx.lineTo(cx - 4, splitY + 10);
+      lCtx.lineTo(cx + 4, splitY + 10);
+      lCtx.closePath();
+      lCtx.fill();
+
+      // Loupe glass sheen
+      lCtx.restore();
+    }
+
+    // --- CANVAS 4: i - DELTA GRAPH ---
+    function drawGraph() {
+      const w = graphCanvas.width;
+      const h = graphCanvas.height;
+      gCtx.clearRect(0, 0, w, h);
+
+      const padL = 60;
+      const padR = 30;
+      const padT = 40;
+      const padB = 50;
+
+      const liquid = LIQUIDS[currentLiquidKey];
+      const theoreticalDm = getTheoreticalMinDeviation(liquid.mu, prismAngle);
+
+      // Draw background grid
+      gCtx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
+      gCtx.lineWidth = 1;
+
+      // X-range: i from 30° to 80°
+      const xMin = 30;
+      const xMax = 80;
+      // Y-range: delta from 15° to 60°
+      const yMin = 15;
+      const yMax = 55;
+
+      const toX = (val) => padL + ((val - xMin) / (xMax - xMin)) * (w - padL - padR);
+      const toY = (val) => h - padB - ((val - yMin) / (yMax - yMin)) * (h - padT - padB);
+
+      // Grid lines & labels
+      gCtx.font = '10px JetBrains Mono, monospace';
+      gCtx.fillStyle = '#94a3b8';
+      gCtx.textAlign = 'center';
+
+      for (let i = xMin; i <= xMax; i += 10) {
+        const x = toX(i);
+        gCtx.beginPath();
+        gCtx.moveTo(x, padT);
+        gCtx.lineTo(x, h - padB);
+        gCtx.stroke();
+        gCtx.fillText(`${i}°`, x, h - padB + 16);
+      }
+
+      gCtx.textAlign = 'right';
+      for (let d = yMin; d <= yMax; d += 10) {
+        const y = toY(d);
+        gCtx.beginPath();
+        gCtx.moveTo(padL, y);
+        gCtx.lineTo(w - padR, y);
+        gCtx.stroke();
+        gCtx.fillText(`${d}°`, padL - 10, y + 4);
+      }
+
+      // Axis labels
+      gCtx.font = 'bold 12px Inter, sans-serif';
+      gCtx.fillStyle = '#f8fafc';
+      gCtx.textAlign = 'center';
+      gCtx.fillText("Angle of Incidence i (°)", padL + (w - padL - padR) / 2, h - 14);
+
+      gCtx.save();
+      gCtx.translate(18, padT + (h - padT - padB) / 2);
+      gCtx.rotate(-Math.PI / 2);
+      gCtx.fillText("Angle of Deviation δ (°)", 0, 0);
+      gCtx.restore();
+
+      // Plot theoretical continuous i - delta curve
+      gCtx.strokeStyle = '#38bdf8';
+      gCtx.lineWidth = 2.5;
+      gCtx.beginPath();
+
+      let minPoint = null;
+      let first = true;
+
+      for (let i = xMin; i <= xMax; i += 0.5) {
+        const ray = tracePrismRay(i, liquid.mu, prismAngle);
+        if (!ray.tir && ray.delta >= yMin && ray.delta <= yMax) {
+          const x = toX(i);
+          const y = toY(ray.delta);
+          if (first) {
+            gCtx.moveTo(x, y);
+            first = false;
+          } else {
+            gCtx.lineTo(x, y);
+          }
+          if (!minPoint || ray.delta < minPoint.delta) {
+            minPoint = { i: i, delta: ray.delta, x: x, y: y };
+          }
+        }
+      }
+      gCtx.stroke();
+
+      // Mark the minimum deviation point (Dm)
+      if (minPoint) {
+        gCtx.fillStyle = '#f59e0b';
+        gCtx.beginPath();
+        gCtx.arc(minPoint.x, minPoint.y, 6, 0, 2 * Math.PI);
+        gCtx.fill();
+        gCtx.strokeStyle = '#ffffff';
+        gCtx.lineWidth = 2;
+        gCtx.stroke();
+
+        // Dashed lines to axes
+        gCtx.save();
+        gCtx.setLineDash([4, 4]);
+        gCtx.strokeStyle = '#fbbf24';
+        gCtx.lineWidth = 1;
+        // to Y axis
+        gCtx.beginPath();
+        gCtx.moveTo(minPoint.x, minPoint.y);
+        gCtx.lineTo(padL, minPoint.y);
+        gCtx.stroke();
+        // to X axis
+        gCtx.beginPath();
+        gCtx.moveTo(minPoint.x, minPoint.y);
+        gCtx.lineTo(minPoint.x, h - padB);
+        gCtx.stroke();
+        gCtx.restore();
+
+        // Text callout
+        gCtx.fillStyle = '#fbbf24';
+        gCtx.font = 'bold 11px monospace';
+        gCtx.textAlign = 'left';
+        gCtx.fillText(`Dm = ${minPoint.delta.toFixed(2)}°`, minPoint.x + 10, minPoint.y - 10);
+        gCtx.fillText(`(at i = ${minPoint.i.toFixed(1)}°)`, minPoint.x + 10, minPoint.y + 6);
+      }
+
+      // Plot user recorded points from observation table
+      observationRows.forEach((row) => {
+        if (row.liquidKey === currentLiquidKey && row.dmDeg) {
+          // If we had recorded specific incidence angle
+          const userX = toX(row.incidenceDeg || 45);
+          const userY = toY(row.dmDeg);
+          gCtx.fillStyle = '#10b981';
+          gCtx.beginPath();
+          gCtx.arc(userX, userY, 5, 0, 2 * Math.PI);
+          gCtx.fill();
+        }
+      });
+    }
+
+    // Refresh all canvases
+    function renderAllCanvases() {
+      drawRayDiagram();
+      drawReticleView();
+      drawVernierLoupe();
+      drawGraph();
+    }
+
+    // Resize Canvases according to device pixel ratio
+    function handleResize() {
+      const dpr = window.devicePixelRatio || 1;
+      [
+        { el: diagramCanvas, w: diagramCanvas.parentElement.clientWidth, h: diagramCanvas.parentElement.clientHeight },
+        { el: reticleCanvas, w: 160, h: 160 },
+        { el: loupeCanvas, w: 160, h: 160 },
+        { el: graphCanvas, w: graphCanvas.parentElement.clientWidth, h: Math.min(graphCanvas.parentElement.clientHeight, 440) }
+      ].forEach(item => {
+        item.el.width = item.w * dpr;
+        item.el.height = item.h * dpr;
+        const ctx = item.el.getContext('2d');
+        ctx.resetTransform?.();
+        ctx.scale(dpr, dpr);
+      });
+      renderAllCanvases();
+    }
+
+    // --- User Interaction Event Handlers ---
+    function onAngleIncidenceSlider(val) {
+      incidenceAngleDeg = parseFloat(val);
+      document.getElementById('slider-i-val').innerText = `${incidenceAngleDeg.toFixed(1)}°`;
+      playClickSound(550, 0.015);
+      updateSpectrometerState();
+    }
+
+    function tuneIncidence(delta) {
+      let next = Math.max(25, Math.min(85, incidenceAngleDeg + delta));
+      document.getElementById('slider-i').value = next;
+      onAngleIncidenceSlider(next);
+    }
+
+    function snapToMinimumDeviation() {
+      const liquid = LIQUIDS[currentLiquidKey];
+      // At min deviation, r1 = A/2 = 30 deg.
+      // sin(i) = mu * sin(30) = mu * 0.5
+      const sin_i = liquid.mu * 0.5;
+      if (sin_i <= 1.0) {
+        const i_min = (Math.asin(sin_i) * 180) / Math.PI;
+        document.getElementById('slider-i').value = i_min.toFixed(1);
+        onAngleIncidenceSlider(i_min);
+        showToast(`Snapped to Minimum Deviation Position (i = ${i_min.toFixed(2)}°)`);
+      }
+    }
+
+    function onTelescopeSlider(val) {
+      telescopeAngle = parseFloat(val);
+      playClickSound(650, 0.01);
+      updateSpectrometerState();
+    }
+
+    function adjustTelescope(delta) {
+      telescopeAngle = Math.max(150, Math.min(270, telescopeAngle + delta));
+      playClickSound(700, 0.015);
+      updateSpectrometerState();
+    }
+
+    function alignTelescopeToRay() {
+      telescopeAngle = currentDeviationRayAngle;
+      playClickSound(880, 0.04);
+      updateSpectrometerState();
+      showToast("Telescope crosshairs centered on sodium slit!");
+    }
+
+    function onLiquidChange() {
+      const sel = document.getElementById('liquid-select');
+      currentLiquidKey = sel.value;
+      const liquid = LIQUIDS[currentLiquidKey];
+      
+      const dot = document.getElementById('liquid-preview-dot');
+      dot.innerText = liquid.formula;
+      dot.style.color = liquid.strokeColor;
+      dot.style.borderColor = liquid.strokeColor;
+
+      // Update graph tab stats
+      document.getElementById('graph-liquid-name').innerText = `${liquid.name} (${liquid.formula})`;
+      const Dm = getTheoreticalMinDeviation(liquid.mu, prismAngle);
+      if (Dm) {
+        document.getElementById('graph-dm-val').innerText = `${degToDMS(Dm)} (${Dm.toFixed(2)}°)`;
+        const im = (Math.asin(liquid.mu * 0.5) * 180) / Math.PI;
+        document.getElementById('graph-im-val').innerText = `${degToDMS(im)} (${im.toFixed(2)}°)`;
+        document.getElementById('graph-mu-val').innerText = `μ = ${liquid.mu.toFixed(4)}`;
+      }
+
+      playClickSound(440, 0.05);
+      updateSpectrometerState();
+      showToast(`Prism filled with ${liquid.name}`);
+    }
+
+    function setExperimentStage(stage) {
+      experimentStage = stage;
+      ['direct', 'dev', 'prism_angle'].forEach(s => {
+        const btn = document.getElementById(`stage-btn-${s === 'prism_angle' ? 'prism' : s}`);
+        if (s === stage) {
+          btn.className = "py-1.5 px-2 rounded-lg border border-amber-500 bg-amber-500/20 text-amber-300 font-semibold transition";
+        } else {
+          btn.className = "py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition";
+        }
+      });
+
+      const badge = document.getElementById('stage-badge');
+      if (stage === 'direct') {
+        badge.innerText = 'Step 1: Direct Ray (R₀)';
+        badge.className = 'text-xs font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40';
+      } else if (stage === 'dev') {
+        badge.innerText = 'Step 2: Minimum Deviation';
+        badge.className = 'text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+      } else {
+        badge.innerText = 'Step 3: Angle of Prism (A)';
+        badge.className = 'text-xs font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40';
+      }
+
+      updateSpectrometerState();
+    }
+
+    function switchDiagramMode(mode) {
+      diagramMode = mode;
+      document.getElementById('btn-view-ray').className = mode === 'ray' 
+        ? "px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-medium" 
+        : "px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 border border-slate-700 hover:text-white";
+      document.getElementById('btn-view-bench').className = mode === 'bench' 
+        ? "px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-medium" 
+        : "px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 border border-slate-700 hover:text-white";
+      
+      document.getElementById('diagram-view-title').innerText = mode === 'ray' 
+        ? "Cross-Sectional Ray Trace" 
+        : "Spectrometer Bench (Top View)";
+      
+      renderAllCanvases();
+    }
+
+    // --- Tab Switching ---
+    function switchMainTab(tab) {
+      const tabs = ['sim', 'table', 'graph', 'theory'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`nav-${t}`);
+        const content = document.getElementById(`tab-${t}-content`);
+        if (t === tab) {
+          btn.className = "px-3.5 py-1.5 rounded-lg font-medium transition bg-amber-500 text-slate-950 shadow";
+          content.classList.remove('hidden');
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-lg font-medium transition text-slate-300 hover:text-white";
+          content.classList.add('hidden');
+        }
+      });
+
+      if (tab === 'table') updateTableDOM();
+      if (tab === 'graph') {
+        setTimeout(() => handleResize(), 50);
+      }
+    }
+
+    // --- Observation Table Logic ---
+    function logCurrentReading() {
+      const liquid = LIQUIDS[currentLiquidKey];
+      const vernier = calculateVernierReadings(telescopeAngle);
+      
+      // Calculate deviation from direct ray (180.00°)
+      const dmDeg = Math.abs(vernier.total - DIRECT_RAY_ANGLE);
+      
+      // Calculate mu = sin((A + Dm)/2) / sin(A/2)
+      const A_rad = (prismAngle * Math.PI) / 180;
+      const Dm_rad = (dmDeg * Math.PI) / 180;
+      const calcMu = Math.sin((A_rad + Dm_rad) / 2) / Math.sin(A_rad / 2);
+      
+      const errorPct = Math.abs((calcMu - liquid.mu) / liquid.mu) * 100;
+
+      const newRow = {
+        id: Date.now(),
+        liquidKey: currentLiquidKey,
+        liquidName: liquid.name,
+        prismAngle: prismAngle,
+        r0Deg: DIRECT_RAY_ANGLE,
+        rmDeg: vernier.total,
+        dmDeg: dmDeg,
+        incidenceDeg: incidenceAngleDeg,
+        calcMu: calcMu,
+        actualMu: liquid.mu,
+        errorPct: errorPct
+      };
+
+      observationRows.push(newRow);
+      playClickSound(880, 0.08);
+      showToast(`Logged reading for ${liquid.name}: μ = ${calcMu.toFixed(4)}`);
+      updateTableDOM();
+    }
+
+    function deleteTableRow(id) {
+      observationRows = observationRows.filter(r => r.id !== id);
+      updateTableDOM();
+    }
+
+    function clearObservationTable() {
+      observationRows = [];
+      updateTableDOM();
+      showToast("Observation table cleared.");
+    }
+
+    function populateSampleData() {
+      observationRows = [
+        {
+          id: 1,
+          liquidKey: 'water',
+          liquidName: 'Water (Distilled)',
+          prismAngle: 60.0,
+          r0Deg: 180.00,
+          rmDeg: 203.60,
+          dmDeg: 23.60,
+          incidenceDeg: 41.8,
+          calcMu: 1.3330,
+          actualMu: 1.3330,
+          errorPct: 0.00
+        },
+        {
+          id: 2,
+          liquidKey: 'glycerine',
+          liquidName: 'Glycerine (Pure)',
+          prismAngle: 60.0,
+          r0Deg: 180.00,
+          rmDeg: 214.87,
+          dmDeg: 34.87,
+          incidenceDeg: 47.4,
+          calcMu: 1.4730,
+          actualMu: 1.4730,
+          errorPct: 0.00
+        },
+        {
+          id: 3,
+          liquidKey: 'ethanol',
+          liquidName: 'Ethyl Alcohol',
+          prismAngle: 60.0,
+          r0Deg: 180.00,
+          rmDeg: 205.76,
+          dmDeg: 25.76,
+          incidenceDeg: 42.9,
+          calcMu: 1.3610,
+          actualMu: 1.3610,
+          errorPct: 0.00
+        }
+      ];
+      updateTableDOM();
+      showToast("Standard CBSE laboratory data loaded!");
+    }
+
+    function updateTableDOM() {
+      const tbody = document.getElementById('table-body');
+      const emptyMsg = document.getElementById('table-empty-msg');
+      tbody.innerHTML = '';
+
+      if (observationRows.length === 0) {
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+      emptyMsg.classList.add('hidden');
+
+      observationRows.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40 transition";
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 text-slate-500 font-bold">${idx + 1}</td>
+          <td class="py-2.5 px-3 font-semibold text-white">${row.liquidName}</td>
+          <td class="py-2.5 px-3">${degToDMS(row.prismAngle)}</td>
+          <td class="py-2.5 px-3">${degToDMS(row.r0Deg)}</td>
+          <td class="py-2.5 px-3 text-amber-300 font-bold">${degToDMS(row.rmDeg)}</td>
+          <td class="py-2.5 px-3 text-yellow-300 font-bold">${degToDMS(row.dmDeg)}</td>
+          <td class="py-2.5 px-3 text-emerald-400 font-bold">${row.calcMu.toFixed(4)}</td>
+          <td class="py-2.5 px-3 text-slate-400">${row.actualMu.toFixed(4)}</td>
+          <td class="py-2.5 px-3 ${row.errorPct < 0.5 ? 'text-emerald-400' : 'text-amber-400'}">${row.errorPct.toFixed(2)}%</td>
+          <td class="py-2.5 px-3 text-center">
+            <button onclick="deleteTableRow(${row.id})" class="text-slate-500 hover:text-red-400 transition">&times;</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- Student Vernier Reading Test Modal ---
+    function testMyVernierReading() {
+      const modal = document.getElementById('check-reading-modal');
+      const resultBox = document.getElementById('user-check-result');
+      resultBox.classList.add('hidden');
+      document.getElementById('user-msr-input').value = '';
+      document.getElementById('user-vsr-input').value = '';
+      modal.classList.remove('hidden');
+    }
+
+    function closeCheckReadingModal() {
+      document.getElementById('check-reading-modal').classList.add('hidden');
+    }
+
+    function verifyUserReading() {
+      const expected = calculateVernierReadings(telescopeAngle);
+      const userMsr = parseFloat(document.getElementById('user-msr-input').value);
+      const userVsr = parseInt(document.getElementById('user-vsr-input').value);
+      const resultBox = document.getElementById('user-check-result');
+      resultBox.classList.remove('hidden');
+
+      if (isNaN(userMsr) || isNaN(userVsr)) {
+        resultBox.className = 'text-xs font-mono p-2.5 rounded-lg bg-red-950/80 text-red-300 border border-red-800';
+        resultBox.innerText = 'Please enter valid numeric values for both MSR and VSR.';
+        return;
+      }
+
+      const msrCorrect = Math.abs(userMsr - expected.msr) < 0.05;
+      const vsrCorrect = (userVsr === expected.vsr);
+
+      if (msrCorrect && vsrCorrect) {
+        resultBox.className = 'text-xs font-mono p-2.5 rounded-lg bg-emerald-950/80 text-emerald-300 border border-emerald-800';
+        resultBox.innerHTML = `
+          <strong>🎉 Excellent! 100% Accurate!</strong><br>
+          MSR = ${degToDMS(expected.msr)}, VSR = ${expected.vsr}<br>
+          Total Reading = ${degToDMS(expected.total)}
+        `;
+      } else {
+        resultBox.className = 'text-xs font-mono p-2.5 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-800';
+        resultBox.innerHTML = `
+          <strong>Almost there! Let's check:</strong><br>
+          Correct MSR: <b>${expected.msr.toFixed(1)}° (${degToDMS(expected.msr)})</b><br>
+          Correct VSR: <b>${expected.vsr} coincident division</b><br>
+          Actual Total: <b>${degToDMS(expected.total)}</b>
+        `;
+      }
+    }
+
+    // --- Interactive Viva Voce Quiz Logic ---
+    const QUIZ_ANSWERS = {
+      1: { correct: 0, text: "Correct! If the cavity is air, the hollow prism acts like three parallel glass plates with air everywhere. The rays emerge without angular deviation (δ = 0)." },
+      2: { correct: 1, text: "Correct! Sodium light emits monochromatic D-lines (589.0 nm & 589.6 nm), preventing chromatic aberration & dispersion into rainbow spectrum." },
+      3: { correct: 1, text: "Correct! At minimum deviation, symmetry dictates that r₁ = r₂ = A/2, so the refracted ray travels parallel to the base inside an equilateral prism." },
+      4: { correct: 0, text: "Correct! Taking the average of two diametrically opposite verniers eliminates error caused by the center of the graduated circle not coinciding with the rotation axis." }
+    };
+    let quizScore = 0;
+    const answeredQuestions = new Set();
+
+    function checkQuiz(qNum, selectedOption) {
+      if (answeredQuestions.has(qNum)) return;
+      answeredQuestions.add(qNum);
+
+      const q = QUIZ_ANSWERS[qNum];
+      const buttons = document.querySelectorAll(`.quiz-btn-${qNum}`);
+      const explanation = document.getElementById(`quiz-explain-${qNum}`);
+      explanation.classList.remove('hidden');
+
+      if (selectedOption === q.correct) {
+        buttons[selectedOption].classList.add('bg-emerald-900/60', 'border-emerald-500', 'text-emerald-200');
+        explanation.innerText = `✅ ${q.text}`;
+        explanation.className = 'text-xs font-mono mt-1 pt-1 border-t border-slate-800 text-emerald-400';
+        quizScore++;
+        playClickSound(880, 0.05);
+      } else {
+        buttons[selectedOption].classList.add('bg-red-900/60', 'border-red-500', 'text-red-200');
+        buttons[q.correct].classList.add('bg-emerald-900/40', 'border-emerald-500', 'text-emerald-300');
+        explanation.innerText = `❌ Incorrect. ${q.text}`;
+        explanation.className = 'text-xs font-mono mt-1 pt-1 border-t border-slate-800 text-amber-400';
+        playClickSound(300, 0.08);
+      }
+
+      document.getElementById('quiz-score').innerText = `Score: ${quizScore} / 4`;
+    }
+
+    // --- Notification Toast ---
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3200);
+    }
+
+    // --- Window Initialization ---
+    window.addEventListener('load', () => {
+      handleResize();
+      onLiquidChange();
+      setExperimentStage('dev');
+      snapToMinimumDeviation();
+      alignTelescopeToRay();
+    });
+
+    window.addEventListener('resize', () => {
+      handleResize();
+    });
+  </script>
+</body>
+</html>
